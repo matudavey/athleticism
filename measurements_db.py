@@ -5,7 +5,7 @@ Created on Mon Oct 24 22:18:29 2016
 @author: Matthew
 """
 
-import pyodbc
+
 from sqlalchemy import create_engine
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -23,10 +23,10 @@ def add_meas(meas_date,user_cfg,meas,value,units):
     df = pd.DataFrame([x],columns = cols)
     df = df.set_index('meas_date')
     print df
-    df.to_sql('meas',engine, if_exists = 'append')
+    df.to_sql('measurements',engine, if_exists = 'append')
     
 def get_mass(uid):
-    query = """ SELECT meas_date, meas_value FROM [measurements].[dbo].[meas] WHERE user_id = %d""" % uid
+    query = """ SELECT meas_date, meas_value FROM [measurements].[dbo].[measurements] WHERE user_id = %d""" % uid
     engine = create_engine('mssql+pyodbc://teamsolveig:q02XxfG2@athleticism.database.windows.net:1433/measurements', echo=True)
     df = pd.read_sql(query,engine)
     df = df.set_index('meas_date')
@@ -42,10 +42,16 @@ if __name__ == '__main__':
     if False: # add new mass value
         add_meas(meas_date,user,meas,value,units)
         
-     if False: #plot mass vs time       
+    if False: #plot mass vs time       
         mass_df = get_mass(user.uid)
         print mass_df
         mass_df.meas_value.plot()
         plt.show()
         plt.close()
     
+    fname = 'C:\Users\Matthew\Documents\Dropbox\Documents\mat fan tracker.xlsx'
+    
+    df = pd.read_excel(fname, sheetname = '3')
+    df= df.T
+    engine = create_engine('mssql+pyodbc://teamsolveig:q02XxfG2@athleticism.database.windows.net:1433/measurements', echo=True)
+    df.to_sql('tbl_meas_type',engine, if_exists = 'append', index = True, index_label = 'measurement_id')
